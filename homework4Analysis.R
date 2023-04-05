@@ -5,19 +5,19 @@ pacman::p_load(tidyverse, ggplot2, dplyr, lubridate, stringr, readxl, data.table
 finalData<-read_rds("data/output/final_ma_data.rds")
 
 final1Data<-finalData%>%
-  group_by(county_name,year) %>%
-  mutate(planCount=n()) %>%
+  group_by(fips,year) %>%
+  select(fips,year)%>% summarize(planCount=n())%>%
   ungroup() 
 
 
-boxplot(planCount ~ year, data = final1Data, xlab = "Year", ylab = "Mean Value", main = "Boxplot of Mean Values by Year",ylim=c(0,600))
+boxplot(planCount ~ year, data = final1Data, xlab = "Year", ylab = "Mean Value", main = "Boxplot of Mean Values by Year",ylim=c(0,100))
 #2
 finalData%>%
-  filter(year==2012 | year==2015 | year==2009)%>%
-  ggplot( aes(x = year, fill = factor(Star_Rating))) + 
+  filter((year==2012 | year==2015 | year==2009) & !is.na(Star_Rating))%>%
+  ggplot( aes(x = factor(Star_Rating), fill = as.factor(year),na.rm=T)) + 
   geom_bar(position = "dodge") + 
   labs(x = "Year", y = "Count", fill = "Star_Rating") + 
-  ggtitle("Count of Each Star Rating for Each Year")
+  ggtitle("Count of Each Star Rating for Each Year")+theme_bw()
 # As time goes on, the count of 3.5 plans and higher increase. Overall, this data seems to indicate the average star rating has increased over this time.
 #3
 finalData%>%
@@ -77,8 +77,8 @@ mutate(raw_rating=rowMeans(
 # )
 # breakdown
 # rounded_values2 <- cut(ateTest$raw_rating, breaks = seq(1, 5.5, by = 0.5), labels = seq(1, 5, by = 0.5), include.lowest = TRUE)
-freq_table2 <- table((rounded_values2))
-print(freq_table2)
+number5<-table(ateTest$Star_Rating)
+print(number5)
 
 #6
 ateTest<- ateTest %>%
