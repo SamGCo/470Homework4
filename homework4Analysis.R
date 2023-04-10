@@ -43,7 +43,8 @@ number4%>%
 
 #5
 ateFinalData<-finalData%>%
-  filter(year==2009)
+  filter(year==2009)%>%
+  filter(!is.na(avg_enrollment)& !is.na(partc_score))
 
 
 ateTest<-ateFinalData%>%
@@ -63,7 +64,22 @@ mutate(raw_rating=rowMeans(
          last_enrolled, state, county, raw_rating, partc_score,
          avg_eligibles, avg_enrolled, premium_partc, risk_ab, Star_Rating,
          bid, avg_ffscost, ma_rate,partd,plan_type)
-
+dataRounded<-ateTest%>%
+  mutate(rounded_30=ifelse(raw_rating>=2.75 & raw_rating <3 &Star_Rating==3,1,0 ),
+         rounded_35=ifelse(raw_rating>=3.25 & raw_rating <3.5 &Star_Rating==3.5,1,0 ),
+         rounded_40=ifelse(raw_rating>=3.75 & raw_rating <4 &Star_Rating==4,1,0 ),
+         rounded_45=ifelse(raw_rating>=4.25 & raw_rating <4.5 &Star_Rating==4.5,1,0 ),
+         rounded_50=ifelse(raw_rating>=4.75 & raw_rating <5 &Star_Rating==5,1,0 ))%>%
+  group_by(Star_Rating)%>%filter(Star_Rating %in% c(3,3.5,4,4.5,5))%>%
+  summarize(count_30=sum(rounded_30),
+            count_35=sum(rounded_35),
+            count_40=sum(rounded_40),
+            count_45=sum(rounded_45),
+            count_50=sum(rounded_50))%>%
+  mutate(rounded=count_30+count_35+count_40+count_45+count_50)%>%
+  select(Star_Rating,rounded)
+dataRounded<-rbind(dataRounded,c(5,0))
+table(dataRounded)
 # ateTest$roundedRatings<-round(ateTest$raw_rating * 2) / 2
 # 
 # # create a table of the number of plans rounded to each rating
